@@ -1,0 +1,13 @@
+{
+  "name": "gtm8020-expert-portal",
+  "version": "1.0.0",
+  "description": "Expert profile editing portal for GTM 80/20 network",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@memberstack/admin": "^1.0.0"
+  }
+}

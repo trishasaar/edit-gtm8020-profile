@@ -1,0 +1,94 @@
+<!--
+  GTM 80/20 Expert Profile Editor
+  Copy this into a Webflow Embed element on the /edit-profile page
+  Make sure Memberstack is installed on the site first
+-->
+
+<!-- Loading State -->
+<div id="loading-state" style="text-align: center; padding: 60px 20px;">
+  <p style="font-size: 18px; color: #666;">Loading your profile...</p>
+</div>
+
+<!-- Form State -->
+<div id="form-state" style="display: none; max-width: 640px; margin: 0 auto; padding: 20px;">
+  <h2 style="margin-bottom: 8px;">Edit Your Profile</h2>
+  <p style="color: #666; margin-bottom: 32px;">Welcome back, <span id="expert-name-display"></span>. Update your profile below and click save — changes go live instantly.</p>
+
+  <form id="expert-edit-form">
+    <!-- Headshot Preview -->
+    <div style="margin-bottom: 24px;">
+      <label style="display: block; font-weight: 600; margin-bottom: 8px;">Current Headshot</label>
+      <img id="headshot-preview" src="" alt="Headshot" style="display: none; width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;" />
+      <p style="font-size: 13px; color: #999; margin-top: 8px;">To update your headshot, please contact the GTM 80/20 team.</p>
+    </div>
+
+    <!-- Headline -->
+    <div style="margin-bottom: 24px;">
+      <label for="field-headline" style="display: block; font-weight: 600; margin-bottom: 8px;">Headline *</label>
+      <input type="text" id="field-headline" required placeholder="e.g., Growth Leader, Fractional CMO"
+             style="width: 100%; padding: 10px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 15px;" />
+    </div>
+
+    <!-- Short Bio -->
+    <div style="margin-bottom: 24px;">
+      <label for="field-short-bio" style="display: block; font-weight: 600; margin-bottom: 8px;">Short Bio *</label>
+      <textarea id="field-short-bio" required rows="4" placeholder="A brief summary of your experience and expertise..."
+                style="width: 100%; padding: 10px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 15px; resize: vertical;"></textarea>
+    </div>
+
+    <!-- Career Highlights -->
+    <div style="margin-bottom: 24px;">
+      <label for="field-career-highlights" style="display: block; font-weight: 600; margin-bottom: 8px;">Career Highlights</label>
+      <textarea id="field-career-highlights" rows="6" placeholder="Key achievements, notable projects, career milestones..."
+                style="width: 100%; padding: 10px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 15px; resize: vertical;"></textarea>
+      <p style="font-size: 13px; color: #999; margin-top: 4px;">Supports plain text. Use line breaks to separate highlights.</p>
+    </div>
+
+    <!-- LinkedIn Link -->
+    <div style="margin-bottom: 24px;">
+      <label for="field-linkedin-link" style="display: block; font-weight: 600; margin-bottom: 8px;">LinkedIn URL</label>
+      <input type="url" id="field-linkedin-link" placeholder="https://www.linkedin.com/in/your-profile"
+             style="width: 100%; padding: 10px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 15px;" />
+    </div>
+
+    <!-- Profile Link -->
+    <div style="margin-bottom: 24px;">
+      <label for="field-profile-link" style="display: block; font-weight: 600; margin-bottom: 8px;">Website / Portfolio URL</label>
+      <input type="url" id="field-profile-link" placeholder="https://yourwebsite.com"
+             style="width: 100%; padding: 10px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 15px;" />
+    </div>
+
+    <!-- Years of Experience -->
+    <div style="margin-bottom: 32px;">
+      <label for="field-years-of-experience" style="display: block; font-weight: 600; margin-bottom: 8px;">Years of Experience *</label>
+      <input type="number" id="field-years-of-experience" required min="1" max="50" placeholder="e.g., 13"
+             style="width: 120px; padding: 10px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 15px;" />
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" id="submit-btn"
+            style="background: #2563eb; color: white; border: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+      Save Changes
+    </button>
+  </form>
+</div>
+
+<!-- Success State -->
+<div id="success-state" style="display: none; text-align: center; padding: 60px 20px;">
+  <div style="font-size: 48px; margin-bottom: 16px;">&#10003;</div>
+  <h3 style="color: #16a34a;">Profile Updated!</h3>
+  <p style="color: #666;">Your changes are now live on the site.</p>
+</div>
+
+<!-- Error State -->
+<div id="error-state" style="display: none; text-align: center; padding: 60px 20px;">
+  <h3 style="color: #dc2626;">Something went wrong</h3>
+  <p id="error-message" style="color: #666;">An unexpected error occurred.</p>
+  <button onclick="window.location.reload()"
+          style="margin-top: 16px; background: #2563eb; color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer;">
+    Try Again
+  </button>
+</div>
+
+<!-- Load the edit-profile script -->
+<script src="https://gtm8020-expert-portal.vercel.app/edit-profile.js"></script>
