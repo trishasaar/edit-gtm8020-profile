@@ -1,15 +1,15 @@
 const { getExpertItem, updateExpertItem, publishSite } = require("../../lib/webflow");
 const { validateMemberstackToken, getCorsHeaders } = require("../../lib/auth");
 
-// Fields experts are allowed to edit
+// Fields experts are allowed to edit (using actual Webflow CMS slugs)
 const EDITABLE_FIELDS = [
-  "headline",
-  "short-bio",
-  "career-highlights",
-  "linkedin-link",
-  "profile-link",
-  "years-of-experience",
-  "headshot-url",
+  "position",              // Headline
+  "short-description",     // Short Bio
+  "experience-highlights", // Career Highlights
+  "linkedin-link",         // LinkedIn Link
+  "profile-link",          // Profile Link / Website
+  "how-many-years-of-experience", // Years of Experience
+  "headshot-url-2",        // Headshot URL
 ];
 
 module.exports = async function handler(req, res) {
@@ -49,16 +49,17 @@ module.exports = async function handler(req, res) {
       const item = await getExpertItem(itemId);
 
       // Return only editable fields + name for display
+      // Map CMS slugs to friendly keys for the frontend
       const editableData = {
         id: item.id,
         name: item.fieldData?.name || "",
-        headline: item.fieldData?.headline || "",
-        "short-bio": item.fieldData?.["short-bio"] || "",
-        "career-highlights": item.fieldData?.["career-highlights"] || "",
+        headline: item.fieldData?.position || "",
+        "short-bio": item.fieldData?.["short-description"] || "",
+        "career-highlights": item.fieldData?.["experience-highlights"] || "",
         "linkedin-link": item.fieldData?.["linkedin-link"] || "",
         "profile-link": item.fieldData?.["profile-link"] || "",
-        "years-of-experience": item.fieldData?.["years-of-experience"] || "",
-        "headshot-url": item.fieldData?.["headshot-url"] || "",
+        "years-of-experience": item.fieldData?.["how-many-years-of-experience"] || "",
+        "headshot-url": item.fieldData?.["headshot-url-2"] || "",
         slug: item.fieldData?.slug || "",
       };
 
@@ -68,13 +69,24 @@ module.exports = async function handler(req, res) {
     if (req.method === "POST") {
       const body = req.body;
 
-      // Filter to only allow editable fields
+      // Map friendly frontend keys to actual Webflow CMS slugs
+      const FIELD_MAP = {
+        headline: "position",
+        "short-bio": "short-description",
+        "career-highlights": "experience-highlights",
+        "linkedin-link": "linkedin-link",
+        "profile-link": "profile-link",
+        "years-of-experience": "how-many-years-of-experience",
+        "headshot-url": "headshot-url-2",
+      };
+
+      // Filter and map to CMS field slugs
       const sanitizedData = {};
-      for (const field of EDITABLE_FIELDS) {
-        if (body[field] !== undefined) {
-          sanitizedData[field] = typeof body[field] === "string"
-            ? body[field].trim()
-            : body[field];
+      for (const [friendlyKey, cmsSlug] of Object.entries(FIELD_MAP)) {
+        if (body[friendlyKey] !== undefined) {
+          sanitizedData[cmsSlug] = typeof body[friendlyKey] === "string"
+            ? body[friendlyKey].trim()
+            : body[friendlyKey];
         }
       }
 
