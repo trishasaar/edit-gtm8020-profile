@@ -2,7 +2,7 @@
 // This script goes into the Webflow /edit-profile page (via embed or custom code)
 // Requires Memberstack to be installed on the site
 
-const API_BASE = "https://gtm8020-expert-portal.vercel.app"; // Update after Vercel deploy
+const API_BASE = "https://edit-gtm8020-profile.vercel.app";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("expert-edit-form");
