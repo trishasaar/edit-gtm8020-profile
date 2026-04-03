@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
   }
 
   // Verify the logged-in member owns this CMS item
-  const memberWebflowId = member.customFields?.webflowItemId || member.metaData?.webflowItemId;
+  const memberWebflowId = member.customFields?.["webflow-item-id"] || member.customFields?.webflowItemId || member.metaData?.webflowItemId;
   if (memberWebflowId !== itemId) {
     return res.status(403).json({ error: "You can only edit your own profile" });
   }

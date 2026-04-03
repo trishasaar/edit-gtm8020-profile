@@ -1,0 +1,197 @@
+<!-- Memberstack webflow package -->
+<script data-memberstack-app="app_cmngl806d00in0rvae7w6gk24" src="https://static.memberstack.com/scripts/v1/memberstack.js"></script>
+
+<style>
+  .portal-wrap { max-width: 560px; margin: 60px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .portal-wrap h1 { font-size: 28px; margin-bottom: 8px; color: #111; }
+  .portal-wrap p.sub { color: #666; margin-bottom: 32px; font-size: 15px; }
+  .portal-wrap label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333; }
+  .portal-wrap input, .portal-wrap textarea {
+    width: 100%; padding: 10px 14px; border: 1px solid #d0d0d0; border-radius: 8px;
+    font-size: 15px; margin-bottom: 20px; font-family: inherit;
+  }
+  .portal-wrap textarea { resize: vertical; min-height: 100px; }
+  .portal-wrap input:focus, .portal-wrap textarea:focus { outline: none; border-color: #2563eb; }
+  .portal-wrap .btn {
+    background: #2563eb; color: #fff; border: none; padding: 14px 32px;
+    border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%;
+  }
+  .portal-wrap .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .portal-wrap .btn-logout {
+    background: none; border: 1px solid #d0d0d0; color: #666; margin-top: 16px;
+    padding: 10px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; width: 100%;
+  }
+  .portal-wrap .msg { text-align: center; padding: 40px 20px; }
+  .portal-wrap .msg.success { color: #16a34a; }
+  .portal-wrap .msg.error { color: #dc2626; }
+  .portal-wrap .headshot-preview {
+    width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
+    border: 2px solid #e0e0e0; margin-bottom: 20px;
+  }
+  .portal-wrap .hint { font-size: 13px; color: #999; margin-top: -14px; margin-bottom: 20px; }
+  #login-state, #loading-state, #form-state, #success-state, #error-state { display: none; }
+</style>
+
+<div class="portal-wrap">
+  <div id="loading-state" class="msg"><p>Loading your profile...</p></div>
+
+  <div id="login-state">
+    <h1>Expert Portal</h1>
+    <p class="sub">Log in to edit your GTM 80/20 expert profile.</p>
+    <form id="login-form">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required placeholder="you@example.com" />
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" required placeholder="Your password" />
+      <button type="submit" class="btn" id="login-btn">Log In</button>
+    </form>
+    <p id="login-error" style="color:#dc2626;text-align:center;margin-top:12px;display:none;"></p>
+  </div>
+
+  <div id="form-state">
+    <h1>Edit Your Profile</h1>
+    <p class="sub">Welcome back, <span id="expert-name-display"></span>. Changes go live instantly.</p>
+    <img id="headshot-preview" class="headshot-preview" src="" alt="" style="display:none;" />
+    <form id="expert-edit-form">
+      <label for="field-headline">Headline</label>
+      <input type="text" id="field-headline" required placeholder="e.g., Growth Leader" />
+      <label for="field-short-bio">Short Bio</label>
+      <textarea id="field-short-bio" required rows="3" placeholder="A brief summary of your experience..."></textarea>
+      <label for="field-career-highlights">Career Highlights</label>
+      <textarea id="field-career-highlights" rows="5" placeholder="Key achievements, notable projects..."></textarea>
+      <p class="hint">Use line breaks to separate highlights.</p>
+      <label for="field-linkedin-link">LinkedIn URL</label>
+      <input type="url" id="field-linkedin-link" placeholder="https://linkedin.com/in/..." />
+      <label for="field-profile-link">Website / Portfolio URL</label>
+      <input type="url" id="field-profile-link" placeholder="https://yoursite.com" />
+      <label for="field-years-of-experience">Years of Experience</label>
+      <input type="number" id="field-years-of-experience" required min="1" max="50" placeholder="e.g., 13" style="width:140px;" />
+      <div style="margin-top:12px;">
+        <button type="submit" class="btn" id="submit-btn">Save Changes</button>
+      </div>
+    </form>
+    <button class="btn-logout" id="logout-btn">Log Out</button>
+  </div>
+
+  <div id="success-state" class="msg success">
+    <h2 style="margin-bottom:8px;">Profile Updated!</h2>
+    <p>Your changes are now live on the site.</p>
+  </div>
+
+  <div id="error-state" class="msg error">
+    <h2 style="margin-bottom:8px;">Something went wrong</h2>
+    <p id="error-message"></p>
+    <button onclick="window.location.reload()" class="btn" style="margin-top:16px;">Try Again</button>
+  </div>
+</div>
+
+<script>
+var API_BASE = "https://edit-gtm8020-profile.vercel.app";
+var currentToken = null;
+var currentItemId = null;
+
+function showState(id) {
+  var states = ['login-state','loading-state','form-state','success-state','error-state'];
+  for (var i = 0; i < states.length; i++) {
+    document.getElementById(states[i]).style.display = states[i] === id ? 'block' : 'none';
+  }
+}
+
+function initPortal() {
+  var ms = window.$memberstackDom;
+  if (!ms) { showState('login-state'); return; }
+  ms.getCurrentMember().then(function(m) {
+    if (!m || !m.data) { showState('login-state'); return; }
+    ms.getMemberToken().then(function(token) {
+      currentToken = token;
+      currentItemId = (m.data.customFields && (m.data.customFields['webflow-item-id'] || m.data.customFields.webflowItemId)) || (m.data.metaData && m.data.metaData.webflowItemId);
+      if (!currentItemId) { showState('login-state'); return; }
+      loadProfile();
+    });
+  }).catch(function() { showState('login-state'); });
+}
+
+function loadProfile() {
+  showState('loading-state');
+  fetch(API_BASE + '/api/expert/' + currentItemId, {
+    headers: { Authorization: 'Bearer ' + currentToken }
+  }).then(function(res) {
+    if (!res.ok) throw new Error('Failed to load profile');
+    return res.json();
+  }).then(function(d) {
+    document.getElementById('expert-name-display').textContent = d.name || 'Expert';
+    document.getElementById('field-headline').value = d.headline || '';
+    document.getElementById('field-short-bio').value = d['short-bio'] || '';
+    document.getElementById('field-career-highlights').value = d['career-highlights'] || '';
+    document.getElementById('field-linkedin-link').value = d['linkedin-link'] || '';
+    document.getElementById('field-profile-link').value = d['profile-link'] || '';
+    document.getElementById('field-years-of-experience').value = d['years-of-experience'] || '';
+    var img = document.getElementById('headshot-preview');
+    if (d['headshot-url']) { img.src = d['headshot-url']; img.style.display = 'block'; }
+    showState('form-state');
+  }).catch(function(e) {
+    document.getElementById('error-message').textContent = e.message;
+    showState('error-state');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(initPortal, 1000);
+
+  document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btn = document.getElementById('login-btn');
+    var errEl = document.getElementById('login-error');
+    btn.disabled = true; btn.textContent = 'Logging in...'; errEl.style.display = 'none';
+    var ms = window.$memberstackDom;
+    ms.loginMemberEmailPassword({
+      email: document.getElementById('login-email').value,
+      password: document.getElementById('login-password').value
+    }).then(function(r) {
+      if (r.data) {
+        ms.getMemberToken().then(function(token) {
+          currentToken = token;
+          currentItemId = (r.data.customFields && (r.data.customFields['webflow-item-id'] || r.data.customFields.webflowItemId)) || (r.data.metaData && r.data.metaData.webflowItemId);
+          if (!currentItemId) throw new Error('Account not linked to a profile. Contact admin.');
+          loadProfile();
+        });
+      }
+    }).catch(function(err) {
+      errEl.textContent = err.message || 'Invalid email or password';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Log In';
+    });
+  });
+
+  document.getElementById('expert-edit-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    fetch(API_BASE + '/api/expert/' + currentItemId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + currentToken },
+      body: JSON.stringify({
+        headline: document.getElementById('field-headline').value,
+        'short-bio': document.getElementById('field-short-bio').value,
+        'career-highlights': document.getElementById('field-career-highlights').value,
+        'linkedin-link': document.getElementById('field-linkedin-link').value,
+        'profile-link': document.getElementById('field-profile-link').value,
+        'years-of-experience': document.getElementById('field-years-of-experience').value
+      })
+    }).then(function(res) {
+      if (!res.ok) return res.json().then(function(d) { throw new Error(d.error || 'Update failed'); });
+      showState('success-state');
+      setTimeout(function() { showState('form-state'); btn.disabled = false; btn.textContent = 'Save Changes'; }, 3000);
+    }).catch(function(err) {
+      document.getElementById('error-message').textContent = err.message;
+      showState('error-state');
+      btn.disabled = false; btn.textContent = 'Save Changes';
+    });
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', function() {
+    var ms = window.$memberstackDom;
+    ms.logout().then(function() { showState('login-state'); });
+  });
+});
+</script>
