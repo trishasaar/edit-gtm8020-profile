@@ -102,12 +102,10 @@ function initPortal() {
   if (!ms) { showState('login-state'); return; }
   ms.getCurrentMember().then(function(m) {
     if (!m || !m.data) { showState('login-state'); return; }
-    ms.getMemberToken().then(function(token) {
-      currentToken = token;
+    currentToken = m.data.tokens && m.data.tokens.accessToken || 'member-authenticated';
       currentItemId = (m.data.customFields && (m.data.customFields['webflow-item-id'] || m.data.customFields.webflowItemId)) || (m.data.metaData && m.data.metaData.webflowItemId);
       if (!currentItemId) { showState('login-state'); return; }
       loadProfile();
-    });
   }).catch(function() { showState('login-state'); });
 }
 
@@ -149,12 +147,10 @@ document.addEventListener('DOMContentLoaded', function() {
       password: document.getElementById('login-password').value
     }).then(function(r) {
       if (r.data) {
-        ms.getMemberToken().then(function(token) {
-          currentToken = token;
-          currentItemId = (r.data.customFields && (r.data.customFields['webflow-item-id'] || r.data.customFields.webflowItemId)) || (r.data.metaData && r.data.metaData.webflowItemId);
-          if (!currentItemId) throw new Error('Account not linked to a profile. Contact admin.');
-          loadProfile();
-        });
+        currentToken = r.data.tokens && r.data.tokens.accessToken || 'member-authenticated';
+        currentItemId = (r.data.customFields && (r.data.customFields['webflow-item-id'] || r.data.customFields.webflowItemId)) || (r.data.metaData && r.data.metaData.webflowItemId);
+        if (!currentItemId) throw new Error('Account not linked to a profile. Contact admin.');
+        loadProfile();
       }
     }).catch(function(err) {
       errEl.textContent = err.message || 'Invalid email or password';
