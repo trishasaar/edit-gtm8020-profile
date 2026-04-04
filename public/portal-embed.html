@@ -97,15 +97,21 @@ function showState(id) {
   }
 }
 
+function getItemId(d) {
+  var member = d.member || d;
+  var cf = member.customFields || member.custom_fields || {};
+  return cf['webflowitemid'] || cf['webflow-item-id'] || cf['webflowItemId'] || null;
+}
+
 function initPortal() {
   var ms = window.$memberstackDom;
   if (!ms) { showState('login-state'); return; }
   ms.getCurrentMember().then(function(m) {
     if (!m || !m.data) { showState('login-state'); return; }
-    currentToken = m.data.tokens && m.data.tokens.accessToken || 'member-authenticated';
-      currentItemId = (m.data.customFields && (m.data.customFields['webflow-item-id'] || m.data.customFields.webflowItemId)) || (m.data.metaData && m.data.metaData.webflowItemId);
-      if (!currentItemId) { showState('login-state'); return; }
-      loadProfile();
+    currentToken = (m.data.tokens && m.data.tokens.accessToken) || 'member-authenticated';
+    currentItemId = getItemId(m.data);
+    if (!currentItemId) { showState('login-state'); return; }
+    loadProfile();
   }).catch(function() { showState('login-state'); });
 }
 
@@ -146,9 +152,10 @@ document.addEventListener('DOMContentLoaded', function() {
       email: document.getElementById('login-email').value,
       password: document.getElementById('login-password').value
     }).then(function(r) {
-      if (r.data) {
-        currentToken = r.data.tokens && r.data.tokens.accessToken || 'member-authenticated';
-        currentItemId = (r.data.customFields && (r.data.customFields['webflow-item-id'] || r.data.customFields.webflowItemId)) || (r.data.metaData && r.data.metaData.webflowItemId);
+      var d = r.data || r;
+      if (d) {
+        currentToken = (d.tokens && d.tokens.accessToken) || 'member-authenticated';
+        currentItemId = getItemId(d);
         if (!currentItemId) throw new Error('Account not linked to a profile. Contact admin.');
         loadProfile();
       }
